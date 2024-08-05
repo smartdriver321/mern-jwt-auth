@@ -1,18 +1,38 @@
 import 'dotenv/config'
 import express from 'express'
+import cors from 'cors'
+import cookieParser from 'cookie-parser'
 
 import connectToDatabase from './config/db'
-import { NODE_ENV, PORT } from './constants/env'
+import { APP_ORIGIN, NODE_ENV, PORT } from './constants/env'
+import errorHandler from './middleware/errorHandler'
+import catchErrors from './utils/catchErrors'
+import { OK } from './constants/http'
 
 const app = express()
 
-app.get('/', (_, res) => {
-	return res.status(200).json({
-		status: 'healthy',
+// Add middleware
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
+app.use(cookieParser())
+app.use(
+	cors({
+		origin: APP_ORIGIN,
+		credentials: true,
+	})
+)
+
+// Health check
+app.get('/', (req, res, next) => {
+	return res.status(OK).json({
+		status: 'Healthy',
 	})
 })
 
-app.listen(4004, async () => {
+// Error handler
+app.use(errorHandler)
+
+app.listen(PORT, async () => {
 	console.log(`Server listening on port ${PORT} in development ${NODE_ENV}`)
 	await connectToDatabase()
 })

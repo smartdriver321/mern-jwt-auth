@@ -7,11 +7,18 @@ import {
 	CONFLICT,
 	INTERNAL_SERVER_ERROR,
 	NOT_FOUND,
+	TOO_MANY_REQUESTS,
 	UNAUTHORIZED,
 } from '../constants/http'
 import { APP_ORIGIN, JWT_REFRESH_SECRET, JWT_SECRET } from '../constants/env'
 import VerificationCodeType from '../constants/verificationCodeType'
-import { ONE_DAY_MS, oneYearFromNow, thirtyDaysFromNow } from '../utils/date'
+import {
+	fiveMinutesAgo,
+	ONE_DAY_MS,
+	oneHourFromNow,
+	oneYearFromNow,
+	thirtyDaysFromNow,
+} from '../utils/date'
 import appAssert from '../utils/appAssert'
 import {
 	RefreshTokenPayload,
@@ -20,7 +27,10 @@ import {
 	verifyToken,
 } from '../utils/jwt'
 import { sendMail } from '../utils/sendMail'
-import { getVerifyEmailTemplate } from '../utils/emailTemplates'
+import {
+	getPasswordResetTemplate,
+	getVerifyEmailTemplate,
+} from '../utils/emailTemplates'
 
 type CreateAccountParams = {
 	email: string
@@ -206,5 +216,62 @@ export const verifyEmail = async (code: string) => {
 
 	return {
 		user: updatedUser.omitPassword(),
+	}
+}
+
+export const sendPasswordResetEmail = async (email: string) => {
+	// Catch any errors that were thrown and log them (but always return a success)
+	// This will prevent leaking sensitive data back to the client (e.g. user not found, email not sent).
+	try {
+		const user = await UserModel.findOne({ email })
+
+		appAssert(user, NOT_FOUND, 'User not found')
+
+		// Check for max password reset requests (2 emails in 5min)
+		const fiveMinAgo = fiveMinutesAgo()
+		const count = await VerificationCodeModel.countDocuments({
+			userId: user._id,
+			type: VerificationCodeType.PasswordReset,
+			createdAt: { $gt: fiveMinAgo },
+		})
+
+		appAssert(
+			count <= 1,
+			TOO_MANY_REQUESTS,
+			'Too many requests, please try again later'
+		)
+
+		// Create verification code
+		const expiresAt = oneHourFromNow()
+		const verificationCode = await VerificationCodeModel.create({
+			userId: user._id,
+			type: VerificationCodeType.PasswordReset,
+			expiresAt,
+		})
+
+		// Send verification email
+		const url = `${APP_ORIGIN}/password/reset?code=${
+			verificationCode._id
+		}&exp=${expiresAt.getTime()}`
+
+		const { data, error } = await sendMail({
+			to: email,
+			...getPasswordResetTemplate(url),
+		})
+
+		appAssert(
+			data?.id,
+			INTERNAL_SERVER_ERROR,
+			`${error?.name} - ${error?.message}`
+		)
+
+		return {
+			url,
+			emailId: data.id,
+		}
+	} catch (error: any) {
+		console.log('SendPasswordResetError:', error.message)
+
+		return {}
 	}
 }

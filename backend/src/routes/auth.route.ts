@@ -5,6 +5,7 @@ import {
 	logoutHandler,
 	refreshHandler,
 	registerHandler,
+	sendPasswordResetHandler,
 	verifyEmailHandler,
 } from '../controllers/auth.controller'
 
@@ -16,5 +17,6 @@ authRoute.post('/login', loginHandler)
 authRoute.get('/logout', logoutHandler)
 authRoute.get('/refresh', refreshHandler)
 authRoute.get('/email/verify/:verificationCodeId', verifyEmailHandler)
+authRoute.post('/password/forgot', sendPasswordResetHandler)
 
 export default authRoute

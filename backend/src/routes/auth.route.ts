@@ -5,6 +5,7 @@ import {
 	logoutHandler,
 	refreshHandler,
 	registerHandler,
+	verifyEmailHandler,
 } from '../controllers/auth.controller'
 
 const authRoute = Router()
@@ -14,5 +15,6 @@ authRoute.post('/register', registerHandler)
 authRoute.post('/login', loginHandler)
 authRoute.get('/logout', logoutHandler)
 authRoute.get('/refresh', refreshHandler)
+authRoute.get('/email/verify/:verificationCodeId', verifyEmailHandler)
 
 export default authRoute

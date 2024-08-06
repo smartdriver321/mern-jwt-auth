@@ -9,7 +9,7 @@ import {
 	NOT_FOUND,
 	UNAUTHORIZED,
 } from '../constants/http'
-import { JWT_REFRESH_SECRET, JWT_SECRET } from '../constants/env'
+import { APP_ORIGIN, JWT_REFRESH_SECRET, JWT_SECRET } from '../constants/env'
 import VerificationCodeType from '../constants/verificationCodeType'
 import { ONE_DAY_MS, oneYearFromNow, thirtyDaysFromNow } from '../utils/date'
 import appAssert from '../utils/appAssert'
@@ -19,6 +19,8 @@ import {
 	signToken,
 	verifyToken,
 } from '../utils/jwt'
+import { sendMail } from '../utils/sendMail'
+import { getVerifyEmailTemplate } from '../utils/emailTemplates'
 
 type CreateAccountParams = {
 	email: string
@@ -52,6 +54,15 @@ export const createAccount = async (data: CreateAccountParams) => {
 		type: VerificationCodeType.EmailVerification,
 		expiresAt: oneYearFromNow(),
 	})
+
+	// Send verification email
+	const url = `${APP_ORIGIN}/email/verify/${verificationCode._id}`
+	const { error } = await sendMail({
+		to: user.email,
+		...getVerifyEmailTemplate(url),
+	})
+	// Ignore email errors for now
+	if (error) console.error(error)
 
 	// create session
 	const session = await SessionModel.create({

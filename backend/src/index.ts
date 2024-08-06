@@ -4,10 +4,10 @@ import cors from 'cors'
 import cookieParser from 'cookie-parser'
 
 import connectToDatabase from './config/db'
+import { OK } from './constants/http'
 import { APP_ORIGIN, NODE_ENV, PORT } from './constants/env'
 import errorHandler from './middleware/errorHandler'
-import catchErrors from './utils/catchErrors'
-import { OK } from './constants/http'
+import authRoute from './routes/auth.route'
 
 const app = express()
 
@@ -23,16 +23,20 @@ app.use(
 )
 
 // Health check
-app.get('/', (req, res, next) => {
+app.get('/health', (_, res) => {
 	return res.status(OK).json({
 		status: 'Healthy',
 	})
 })
 
+// Auth routes
+app.use('/auth', authRoute)
+
 // Error handler
 app.use(errorHandler)
 
 app.listen(PORT, async () => {
-	console.log(`Server listening on port ${PORT} in development ${NODE_ENV}`)
 	await connectToDatabase()
+
+	console.log(`Server listening on port ${PORT} in ${NODE_ENV} environment`)
 })

@@ -4,6 +4,7 @@ import { fifteenMinutesFromNow, thirtyDaysFromNow } from './date'
 import { NODE_ENV } from '../constants/env'
 
 export const REFRESH_PATH = '/auth/refresh'
+
 const secure = NODE_ENV !== 'development'
 const defaults: CookieOptions = {
 	sameSite: 'strict',

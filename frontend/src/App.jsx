@@ -7,16 +7,20 @@ import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import AppContainer from './components/AppContainer'
 import Profile from './pages/Profile'
+import Settings from './pages/Settings'
 
 export const Home = () => {
 	return <div>Home</div>
 }
 
 function App() {
+	//  Set the navigate function on our API client for using in the axios error interceptor.This allows us to redirect to the login page when an auth error occurs.
+
 	return (
 		<Routes>
 			<Route path='/' element={<AppContainer />}>
 				<Route index element={<Profile />} />
+				<Route path='settings' element={<Settings />} />
 			</Route>
 			<Route path='/register' element={<Register />} />
 			<Route path='/login' element={<Login />} />

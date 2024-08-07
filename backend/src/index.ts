@@ -10,6 +10,7 @@ import errorHandler from './middleware/errorHandler'
 import authenticate from './middleware/authenticate'
 import authRoute from './routes/auth.route'
 import userRoute from './routes/user.route'
+import sessionRoute from './routes/session.route'
 
 const app = express()
 
@@ -36,6 +37,7 @@ app.use('/auth', authRoute)
 
 // protected routes
 app.use('/user', authenticate, userRoute)
+app.use('/sessions', authenticate, sessionRoute)
 
 // Error handler
 app.use(errorHandler)

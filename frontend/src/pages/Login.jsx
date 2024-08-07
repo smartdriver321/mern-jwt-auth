@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import {
 	Flex,
@@ -20,6 +20,9 @@ import { login } from '../lib/api'
 const Login = () => {
 	const navigate = useNavigate()
 
+	const location = useLocation()
+	const redirectUrl = location.state?.redirectUrl || '/'
+
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
 
@@ -30,7 +33,7 @@ const Login = () => {
 	} = useMutation({
 		mutationFn: login,
 		onSuccess: () => {
-			navigate('/', {
+			navigate(redirectUrl, {
 				replace: true,
 			})
 		},

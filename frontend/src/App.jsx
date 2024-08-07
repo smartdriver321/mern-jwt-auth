@@ -1,13 +1,14 @@
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, useNavigate } from 'react-router-dom'
 
+import AppContainer from './components/AppContainer'
 import Register from './pages/Register'
 import Login from './pages/Login'
 import VerifyEmail from './pages/VerifyEmail'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
-import AppContainer from './components/AppContainer'
 import Profile from './pages/Profile'
 import Settings from './pages/Settings'
+import { setNavigate } from './lib/navigation'
 
 export const Home = () => {
 	return <div>Home</div>
@@ -15,6 +16,8 @@ export const Home = () => {
 
 function App() {
 	//  Set the navigate function on our API client for using in the axios error interceptor.This allows us to redirect to the login page when an auth error occurs.
+	const navigate = useNavigate()
+	setNavigate(navigate)
 
 	return (
 		<Routes>

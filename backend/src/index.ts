@@ -7,7 +7,9 @@ import connectToDatabase from './config/db'
 import { OK } from './constants/http'
 import { APP_ORIGIN, NODE_ENV, PORT } from './constants/env'
 import errorHandler from './middleware/errorHandler'
+import authenticate from './middleware/authenticate'
 import authRoute from './routes/auth.route'
+import userRoute from './routes/user.route'
 
 const app = express()
 
@@ -31,6 +33,9 @@ app.get('/health', (_, res) => {
 
 // Auth routes
 app.use('/auth', authRoute)
+
+// protected routes
+app.use('/user', authenticate, userRoute)
 
 // Error handler
 app.use(errorHandler)
